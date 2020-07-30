@@ -9,4 +9,5 @@ public static final String LEAGUE_STRING="League Name";
 public static final String TEAM_STRING="Team ";
 public static final String TOKEN_STRING="football.apikey";
 public static final String baseUrl_STRING="football.apiUrl";
+public static final String ERROR_STRING="There is an issue is Microservices";
 }

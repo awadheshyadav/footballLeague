@@ -25,48 +25,64 @@ public class FootBallLeagueApplicationController {
 	public String leagueStatus(@RequestBody LeagueStatus request)
 	{
 		String response = Constants.EMPTY_STRING;
-		response = _requestValidation(request);
-		if(!Constants.EMPTY_STRING.equals(response))
-			return response;
-		
+		try {
+			response = _requestValidation(request);
+			if(!Constants.EMPTY_STRING.equals(response))
+				return response;
+			else
+			{
+				String token = Env.getProperty(Constants.TOKEN_STRING);
+				String baseUrl=Env.getProperty(Constants.baseUrl_STRING);
+				FootBallLeagueServiceImpl serviceImpl= new FootBallLeagueServiceImpl(baseUrl,token);
+				response=serviceImpl.getTeamStatus(request.getCountry_name()
+						,request.getLeague_name(), request.getTeam_name());
+				return response;
+			}
+		}catch(Exception e)
 		{
-			String token = Env.getProperty(Constants.TOKEN_STRING);
-			String baseUrl=Env.getProperty(Constants.baseUrl_STRING);
-			FootBallLeagueServiceImpl serviceImpl= new FootBallLeagueServiceImpl(baseUrl,token);
-			response=serviceImpl.getTeamStatus(request.getCountry_name()
-					,request.getLeague_name(), request.getTeam_name());
-			return response;
+			logger.error("Error in the leagueStatus() method of FootBallLeagueController>>"+
+		e.getMessage());
+			if(Constants.EMPTY_STRING.equals(response))
+				return Constants.ERROR_STRING;
+			else
+				return response;
 		}
 	}
 
 	private String _requestValidation(LeagueStatus request) {
 		// TODO Auto-generated method stub
-		if(request.getCountry_name()!=null 
-				&& !Constants.EMPTY_STRING.equals(request.getCountry_name()))
-			logger.info("Value of Country Name::"+request.getCountry_name());
-		else
-			requestValidation.append(Constants.VALIDATION_STRING+"\n"+Constants.COUNTRY_STRING);
-		if(request.getLeague_name()!=null 
-				&& !Constants.EMPTY_STRING.equals(request.getLeague_name()))
-			logger.info("Value of League Name::"+request.getLeague_name());
-		else
-		{
-			if(Constants.EMPTY_STRING.equals(requestValidation.toString()))
-				requestValidation.append(Constants.VALIDATION_STRING+"\n"+Constants.LEAGUE_STRING);
+			try {
+			if(request.getCountry_name()!=null 
+					&& !Constants.EMPTY_STRING.equals(request.getCountry_name()))
+				logger.info("Value of Country Name::"+request.getCountry_name());
 			else
-				requestValidation.append("\n"+Constants.LEAGUE_STRING);
-		}
-		if(request.getTeam_name()!=null 
-				&& !Constants.EMPTY_STRING.equals(request.getTeam_name()))
-			logger.info("Value of Team Name::"+request.getTeam_name());
-		else
-		{
-			if(Constants.EMPTY_STRING.equals(requestValidation.toString()))
-				requestValidation.append(Constants.VALIDATION_STRING+"\n"+Constants.TEAM_STRING);
+				requestValidation.append(Constants.VALIDATION_STRING+"\n"+Constants.COUNTRY_STRING);
+			if(request.getLeague_name()!=null 
+					&& !Constants.EMPTY_STRING.equals(request.getLeague_name()))
+				logger.info("Value of League Name::"+request.getLeague_name());
 			else
-				requestValidation.append("\n"+Constants.TEAM_STRING);
+			{
+				if(Constants.EMPTY_STRING.equals(requestValidation.toString()))
+					requestValidation.append(Constants.VALIDATION_STRING+"\n"+Constants.LEAGUE_STRING);
+				else
+					requestValidation.append("\n"+Constants.LEAGUE_STRING);
+			}
+			if(request.getTeam_name()!=null 
+					&& !Constants.EMPTY_STRING.equals(request.getTeam_name()))
+				logger.info("Value of Team Name::"+request.getTeam_name());
+			else
+			{
+				if(Constants.EMPTY_STRING.equals(requestValidation.toString()))
+					requestValidation.append(Constants.VALIDATION_STRING+"\n"+Constants.TEAM_STRING);
+				else
+					requestValidation.append("\n"+Constants.TEAM_STRING);
+			}
+			return requestValidation.toString();
+		}catch(Exception e) {
+			logger.error("Error in the _requestValidation() method of FootBallLeagueController>>"+
+		e.getMessage());
+			return requestValidation.append("Error in the _requestValidation() method").toString();
 		}
-		return requestValidation.toString();
 	}
 	
 }

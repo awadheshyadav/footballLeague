@@ -5,20 +5,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Attributes;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import javax.swing.text.html.HTML;
-import javax.swing.text.html.HTML.Tag;
 
 import org.apache.tomcat.util.codec.binary.Base64;
-import org.apache.tomcat.util.json.JSONParser;
-import org.apache.tomcat.util.json.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +15,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
@@ -70,79 +58,89 @@ public class FootBallLeagueServiceImpl implements FootBallLeagueService{
 	public String getTeamStatus(String countryName, String leagueName, String teamName)
 	{
 		String countries = EMPTY_STRING;
-		countries=getCountry();	
-		Type listTypeCountry = new TypeToken<ArrayList<Country>>(){ }.getType();
-		List<Country> countryList = new Gson().fromJson(countries,
-				listTypeCountry);
-		 
-		List<Country> matchingCountry=countryList.stream()
-		.filter((country)->country.getCountry_name().equals(countryName))
-		.collect(Collectors.toList());
 		StringBuffer response=new StringBuffer();
 		String countryid=EMPTY_STRING;
-		if(matchingCountry.size()>0 && matchingCountry!=null)
-		{
-			countryid=matchingCountry.get(0).getCountry_id();
-			response.append("Country ID>>"+countryid+"\t"+"Country Name>>"+countryName+"\n");
-		}
-		else
-		{
-			response.append("Country Name>>"+countryName+" not found in the list of Football League Database\n");
-			return response.toString();
-		}
 		String leaguesString=EMPTY_STRING;
-		leaguesString=getLeagues(countryid);
-		Type listTypeLeagues = new TypeToken<ArrayList<Leagues>>(){
-			
-		}.getType();
-		List<Leagues> leaguesList = new Gson().fromJson(leaguesString, listTypeLeagues);
-		List<Leagues> matchingLeague=leaguesList.stream()
-				.filter((leagues)->leagues.getLeague_name().equals(leagueName))
-				.collect(Collectors.toList());
-		String leagueId=EMPTY_STRING;
-		if(matchingLeague.size()>0 && matchingLeague!=null)
-		{
-			leagueId=matchingLeague.get(0).getLeague_id();
-			response.append("League ID>>"+leagueId+"\t"+"League Name>>"+leagueName+"\n");
-
-		}
-		else
-		{
-			response.append("Country>>"+countryName+" not participated in the League>>"+leagueName+"\n");
-			return response.toString();
-		}
 		String stringStandings=EMPTY_STRING;
-		stringStandings=getStandings(leagueId);
-		Type listTypestandings = new TypeToken<ArrayList<Standings>>(){
-			
-		}.getType();
-		List<Standings> standingList = new Gson().fromJson(stringStandings, listTypestandings);
-		List<Standings> matchingStandings = standingList.stream()
-				.filter((standings) -> leagueName.equals(standings.getLeague_name())
-						&& countryName.equals(standings.getCountry_name())
-						&& teamName.equals(standings.getTeam_name()))
-				.collect(Collectors.toList());
-		if(matchingStandings.size()>0 && matchingStandings!=null)
+			try {
+			countries=getCountry();	
+			Type listTypeCountry = new TypeToken<ArrayList<Country>>(){ }.getType();
+			List<Country> countryList = new Gson().fromJson(countries,
+					listTypeCountry);
+			 
+			List<Country> matchingCountry=countryList.stream()
+			.filter((country)->country.getCountry_name().equals(countryName))
+			.collect(Collectors.toList());
+			if(matchingCountry.size()>0 && matchingCountry!=null)
+			{
+				countryid=matchingCountry.get(0).getCountry_id();
+				response.append("Country ID>>"+countryid+"\t"+"Country Name>>"+countryName+"\n");
+			}
+			else
+			{
+				response.append("Country Name>>"+countryName+" not found in the list of Football League Database\n");
+				return response.toString();
+			}
+	
+			leaguesString=getLeagues(countryid);
+			Type listTypeLeagues = new TypeToken<ArrayList<Leagues>>(){
+				
+			}.getType();
+			List<Leagues> leaguesList = new Gson().fromJson(leaguesString, listTypeLeagues);
+			List<Leagues> matchingLeague=leaguesList.stream()
+					.filter((leagues)->leagues.getLeague_name().equals(leagueName))
+					.collect(Collectors.toList());
+			String leagueId=EMPTY_STRING;
+			if(matchingLeague.size()>0 && matchingLeague!=null)
+			{
+				leagueId=matchingLeague.get(0).getLeague_id();
+				response.append("League ID>>"+leagueId+"\t"+"League Name>>"+leagueName+"\n");
+	
+			}
+			else
+			{
+				response.append("Country>>"+countryName+" not participated in the League>>"+leagueName+"\n");
+				return response.toString();
+			}
+			stringStandings=getStandings(leagueId);
+			Type listTypestandings = new TypeToken<ArrayList<Standings>>(){
+				
+			}.getType();
+			List<Standings> standingList = new Gson().fromJson(stringStandings, listTypestandings);
+			List<Standings> matchingStandings = standingList.stream()
+					.filter((standings) -> leagueName.equals(standings.getLeague_name())
+							&& countryName.equals(standings.getCountry_name())
+							&& teamName.equals(standings.getTeam_name()))
+					.collect(Collectors.toList());
+			if(matchingStandings.size()>0 && matchingStandings!=null)
+			{
+				List<TeamToDo> teamtodo = matchingStandings.stream()
+				.map(standings->{
+					TeamToDo todo = new TeamToDo(standings.getTeam_id()
+						,standings.getTeam_name()
+						,standings.getOverall_league_position());
+					return todo;
+						}).collect(Collectors.toList());
+				String teamStatus = teamtodo.stream()
+						.map((teamToDo) -> teamToDo.toString())
+						.collect(Collectors.joining());
+				response.append(teamStatus);
+				return response.toString();
+			}
+			else
+			{
+				response.append("No Team Played in this League with Name>>"+teamName);
+				return response.toString();
+			}
+		}catch(Exception e)
 		{
-			List<TeamToDo> teamtodo = matchingStandings.stream()
-			.map(standings->{
-				TeamToDo todo = new TeamToDo(standings.getTeam_id()
-					,standings.getTeam_name()
-					,standings.getOverall_league_position());
-				return todo;
-					}).collect(Collectors.toList());
-			String teamStatus = teamtodo.stream()
-					.map((teamToDo) -> teamToDo.toString())
-					.collect(Collectors.joining());
-			response.append(teamStatus);
-			return response.toString();
+			logger.error("Error in the getTeamStatus() method of FootBallLeagueServiceImpl>>"
+					+e.getMessage());
+			if(!EMPTY_STRING.equals(response.toString()))
+				return response.append("Error in the getTeamStatus() method of FootBallLeagueServiceImpl>>").toString();
+			else
+				return response.append("Error in the getTeamStatus() method of FootBallLeagueServiceImpl>>").toString();
 		}
-		else
-		{
-			response.append("No Team Played in this League with Name>>"+teamName);
-			return response.toString();
-		}
-		
 	}
 	@Override
 	public String getCountry() {
@@ -170,7 +168,8 @@ public class FootBallLeagueServiceImpl implements FootBallLeagueService{
 
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error in the getCountry() method of FootBallLeagueServiceImpl>>"
+					+e.getMessage());
 		}
 		return countries;
 	}
@@ -201,7 +200,8 @@ public class FootBallLeagueServiceImpl implements FootBallLeagueService{
 
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error in the getLeagues() method of FootBallLeagueServiceImpl>>"
+					+e.getMessage());
 		}
 		return stringLeagues;
 	}
@@ -232,7 +232,8 @@ public class FootBallLeagueServiceImpl implements FootBallLeagueService{
 
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error in the getStandings() method of FootBallLeagueServiceImpl>>"
+					+e.getMessage());
 		}
 		return stringStandings;
 	}
