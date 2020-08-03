@@ -9,6 +9,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import com.league.football.beans.LeagueStatus;
 import com.league.football.services.FootBallLeagueServiceImpl;
@@ -21,10 +22,17 @@ public class FootBallLeagueApplicationController {
 	Environment Env;
 	private static final Logger logger = LoggerFactory.getLogger(FootBallLeagueApplicationController.class);
 	StringBuffer requestValidation=new StringBuffer(Constants.EMPTY_STRING);
-	@RequestMapping(value="/leagueStatus", produces=MediaType.APPLICATION_JSON_VALUE, consumes=MediaType.APPLICATION_JSON_VALUE)
-	public String leagueStatus(@RequestBody LeagueStatus request)
+	@RequestMapping(value="/leagueStatus"
+			, method=RequestMethod.GET
+			, consumes=MediaType.ALL_VALUE
+			, produces=MediaType.APPLICATION_JSON_VALUE)
+	public String leagueStatus(String country_name,
+			String league_name, String team_name)
 	{
+		LeagueStatus request=null;
 		String response = Constants.EMPTY_STRING;
+		if(request==null)
+			request = new LeagueStatus(country_name,league_name,team_name);
 		try {
 			response = _requestValidation(request);
 			if(!Constants.EMPTY_STRING.equals(response))
@@ -36,6 +44,7 @@ public class FootBallLeagueApplicationController {
 				FootBallLeagueServiceImpl serviceImpl= new FootBallLeagueServiceImpl(baseUrl,token);
 				response=serviceImpl.getTeamStatus(request.getCountry_name()
 						,request.getLeague_name(), request.getTeam_name());
+				logger.info("Final response sending back to client>>\n"+response);
 				return response;
 			}
 		}catch(Exception e)
