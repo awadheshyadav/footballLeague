@@ -21,7 +21,7 @@ public class FootBallLeagueApplicationController {
 	@Autowired
 	Environment Env;
 	private static final Logger logger = LoggerFactory.getLogger(FootBallLeagueApplicationController.class);
-	StringBuffer requestValidation=new StringBuffer(Constants.EMPTY_STRING);
+	StringBuffer requestValidation;
 	@RequestMapping(value="/leagueStatus"
 			, method=RequestMethod.GET
 			, consumes=MediaType.ALL_VALUE
@@ -30,6 +30,7 @@ public class FootBallLeagueApplicationController {
 			String league_name, String team_name)
 	{
 		LeagueStatus request=null;
+		requestValidation=new StringBuffer(Constants.EMPTY_STRING);
 		String response = Constants.EMPTY_STRING;
 		if(request==null)
 			request = new LeagueStatus(country_name,league_name,team_name);
