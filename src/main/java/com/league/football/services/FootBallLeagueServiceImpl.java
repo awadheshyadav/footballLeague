@@ -50,6 +50,7 @@ public class FootBallLeagueServiceImpl implements FootBallLeagueService{
 			logger.info("Inside FootBallLeagueServiceImpl Constructor, Header Set sucessfully");
 			logger.info("Hi Manish, How are you?");
 			logger.debug("Avyukt and Neo are good friends");
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			logger.error("FootBallLeagueServiceImpl Constructor throwing Exception"
